@@ -91,7 +91,7 @@ const CredentialVerification = ({
   };
 
   // Configuration - these would typically come from environment variables or API
-  /*const [config, setConfig] = useState({
+  const [config] = useState({
     apiKey:
       import.meta.env.VITE_VERIFIER_API_KEY ||
       "W9J6VXGJX0AT0lCvlIXibzNzWyB440QFuij0cicC",
@@ -102,7 +102,7 @@ const CredentialVerification = ({
     redirectUrlForIssuer:
       import.meta.env.VITE_REDIRECT_URL_FOR_ISSUER ||
       "http://localhost:5173/issue",
-  });*/
+  });
 
   console.log("AirService in CredentialVerification:", airService);
 
