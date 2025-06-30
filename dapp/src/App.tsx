@@ -8,8 +8,8 @@ import { AirService, BUILD_ENV, type AirEventListener, type BUILD_ENV_TYPE } fro
 import { getEnvironmentConfig, type EnvironmentConfig } from "./config/environments";
 
 // Get partner IDs from environment variables
-const ISSUER_PARTNER_ID = import.meta.env.VITE_ISSUER_PARTNER_ID || "66811bd6-dab9-41ef-8146-61f29d038a45";
-const VERIFIER_PARTNER_ID = import.meta.env.VITE_VERIFIER_PARTNER_ID || "66811bd6-dab9-41ef-8146-61f29d038a45";
+const ISSUER_PARTNER_ID = import.meta.env.VITE_ISSUER_PARTNER_ID || "083ab449-16e0-4b70-b3fd-6606ce0d4a90";
+const VERIFIER_PARTNER_ID = import.meta.env.VITE_VERIFIER_PARTNER_ID || "083ab449-16e0-4b70-b3fd-6606ce0d4a90";
 const enableLogging = true;
 
 const ENV_OPTIONS = [

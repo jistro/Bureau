@@ -60,29 +60,38 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showKYCModal, setShowKYCModal] = useState(false);
+  const [showCredentialButton, setShowCredentialButton] = useState(false);
   const widgetRef = useRef<AirCredentialWidget | null>(null);
 
   // Configuration - these would typically come from environment variables or API
   const [config, setConfig] = useState({
     issuerDid: import.meta.env.VITE_ISSUER_DID || "did:air:id:test:4P6aviTbQKGUZ27kjWDBgFrTp2CLcNCyEcszfu91jC",
     apiKey: import.meta.env.VITE_ISSUER_API_KEY || "L1uIPkH2lNwDBt3Sjo47x9tbALEq5oRgGjO3TNL1", // api key
-    credentialId: import.meta.env.VITE_CREDENTIAL_ID || "c21hh0g08hopw01a15820f",
+    credentialId: import.meta.env.VITE_CREDENTIAL_ID || "c21hi0g16093g02i20232N",
   });
 
   // Dynamic credential subject fields
   const [credentialFields, setCredentialFields] = useState<CredentialField[]>([
     {
       id: "1",
-      name: "siganuteVer",
-      type: "string",
-      value: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+      name: "accountNumber",
+      type: "number",
+      value: 1234567890,
     },
     {
       id: "2",
-      name: "account",
+      name: "creditScore",
       type: "number",
-      value: 12345432789783492837924234879,
+      value: 90,
     },
+    {
+      id: "3",
+      name: "creditHistory",
+      type: "string",
+      value: "history: Good credit history with no late payments ",
+    },
+    
   ]);
 
   const handleConfigChange = (field: string, value: string) => {
@@ -198,6 +207,8 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
     setIsLoading(true);
     setError(null);
     setIsSuccess(false);
+
+    console.log("credentialFields", credentialFields);
 
     try {
       //generate everytime to ensure the partner token passing in correctly
@@ -337,21 +348,11 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
         <label>account number</label>
         <input
           type="text"
-          value={credentialFields[1].value.toString()}
-          onChange={(e) => updateCredentialField(credentialFields[1].id, { value: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 mb-4"
-          placeholder="Enter account number"
-        />
-        <label>Signature of data</label>
-        <input
-          type="text"
           value={credentialFields[0].value.toString()}
           onChange={(e) => updateCredentialField(credentialFields[0].id, { value: e.target.value })}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 mb-4"
-          placeholder="Enter signature of data"
+          placeholder="Enter account number"
         />
-
-      
 
         {/* Environment Info 
         <div className="mb-6 sm:mb-8 p-2 sm:p-4 bg-gray-50 border border-gray-200 rounded-md">
@@ -388,27 +389,55 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+          {/* KYC Process Button */}
           <button
-            onClick={handleIssueCredential}
-            disabled={isLoading || !isLoggedIn}
-            className="w-full sm:flex-1 bg-brand-600 text-white px-4 sm:px-6 py-3 rounded-md font-medium hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            onClick={() => setShowKYCModal(true)}
+            className="w-full sm:flex-1 bg-blue-600 text-white px-4 sm:px-6 py-3 rounded-md font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
           >
-            {isLoading ? (
-              <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Launching Widget...
-              </span>
-            ) : (
-              "Start Credential Issuance Widget"
-            )}
+            Start KYC Process
           </button>
+
+          {showKYCModal && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                <h3 className="text-lg font-bold mb-4">KYC Process</h3>
+                <p className="text-sm text-gray-600 mb-4">Please complete the KYC process by following the instructions.</p>
+                <button
+                  onClick={() => {
+                    setShowKYCModal(false);
+                    setShowCredentialButton(true);
+                  }}
+                  className="w-full bg-green-600 text-white px-4 py-2 rounded-md font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
+                >
+                  Complete KYC
+                </button>
+              </div>
+            </div>
+          )}
+
+          {showCredentialButton && (
+            <button
+              onClick={handleIssueCredential}
+              disabled={isLoading || !isLoggedIn}
+              className="w-full sm:flex-1 bg-brand-600 text-white px-4 sm:px-6 py-3 rounded-md font-medium hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Launching Widget...
+                </span>
+              ) : (
+                "Start Credential Issuance Widget"
+              )}
+            </button>
+          )}
 
           {isSuccess && (
             <button

@@ -57,9 +57,9 @@ const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv, partne
 
   // Configuration - these would typically come from environment variables or API
   const [config, setConfig] = useState({
-    apiKey: import.meta.env.VITE_VERIFIER_API_KEY || "your-verifier-api-key",
-    verifierDid: import.meta.env.VITE_VERIFIER_DID || "did:example:verifier123",
-    programId: import.meta.env.VITE_PROGRAM_ID || "c21hc030kb5iu0030224Qs",
+    apiKey: import.meta.env.VITE_VERIFIER_API_KEY || "L1uIPkH2lNwDBt3Sjo47x9tbALEq5oRgGjO3TNL1",
+    verifierDid: import.meta.env.VITE_VERIFIER_DID || "did:air:id:test:4P6aviTbQKGUZ27kjWDBgFrTp2CLcNCyEcszfu91jC",
+    programId: import.meta.env.VITE_PROGRAM_ID || "c21hh0g08hopw01a15820f",
     redirectUrlForIssuer: import.meta.env.VITE_REDIRECT_URL_FOR_ISSUER || "http://localhost:5173/issue",
   });
 
