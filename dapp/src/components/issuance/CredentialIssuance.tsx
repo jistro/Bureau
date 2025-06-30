@@ -1,5 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { AirCredentialWidget, type ClaimRequest, type JsonDocumentObject, type Language } from "@mocanetwork/air-credential-sdk";
+import {
+  AirCredentialWidget,
+  type ClaimRequest,
+  type JsonDocumentObject,
+  type Language,
+} from "@mocanetwork/air-credential-sdk";
 import "@mocanetwork/air-credential-sdk/dist/style.css";
 import { AirService, BUILD_ENV } from "@mocanetwork/airkit";
 import type { BUILD_ENV_TYPE } from "@mocanetwork/airkit";
@@ -23,7 +28,11 @@ interface CredentialIssuanceProps {
   environmentConfig: EnvironmentConfig;
 }
 
-const getIssuerAuthToken = async (issuerDid: string, apiKey: string, apiUrl: string): Promise<string | null> => {
+const getIssuerAuthToken = async (
+  issuerDid: string,
+  apiKey: string,
+  apiUrl: string
+): Promise<string | null> => {
   try {
     const response = await fetch(`${apiUrl}/issuer/login`, {
       method: "POST",
@@ -47,7 +56,10 @@ const getIssuerAuthToken = async (issuerDid: string, apiKey: string, apiUrl: str
     if (data.code === 80000000 && data.data && data.data.token) {
       return data.data.token;
     } else {
-      console.error("Failed to get issuer auth token from API:", data.msg || "Unknown error");
+      console.error(
+        "Failed to get issuer auth token from API:",
+        data.msg || "Unknown error"
+      );
       return null;
     }
   } catch (error) {
@@ -56,7 +68,13 @@ const getIssuerAuthToken = async (issuerDid: string, apiKey: string, apiUrl: str
   }
 };
 
-const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId, environmentConfig }: CredentialIssuanceProps) => {
+const CredentialIssuance = ({
+  airService,
+  isLoggedIn,
+  airKitBuildEnv,
+  partnerId,
+  environmentConfig,
+}: CredentialIssuanceProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,9 +84,14 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
 
   // Configuration - these would typically come from environment variables or API
   const [config, setConfig] = useState({
-    issuerDid: import.meta.env.VITE_ISSUER_DID || "did:air:id:test:4P6aviTbQKGUZ27kjWDBgFrTp2CLcNCyEcszfu91jC",
-    apiKey: import.meta.env.VITE_ISSUER_API_KEY || "L1uIPkH2lNwDBt3Sjo47x9tbALEq5oRgGjO3TNL1", // api key
-    credentialId: import.meta.env.VITE_CREDENTIAL_ID || "c21hi0g16093g02i20232N",
+    issuerDid:
+      import.meta.env.VITE_ISSUER_DID ||
+      "did:air:id:test:4P6aviTbQKGUZ27kjWDBgFrTp2CLcNCyEcszfu91jC",
+    apiKey:
+      import.meta.env.VITE_ISSUER_API_KEY ||
+      "L1uIPkH2lNwDBt3Sjo47x9tbALEq5oRgGjO3TNL1", // api key
+    credentialId:
+      import.meta.env.VITE_CREDENTIAL_ID || "c21hi0g16093g02i20232N",
   });
 
   // Dynamic credential subject fields
@@ -91,20 +114,20 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
       type: "string",
       value: "history: Good credit history with no late payments ",
     },
-    
   ]);
 
   const handleConfigChange = (field: string, value: string) => {
     setConfig((prev) => ({ ...prev, [field]: value }));
   };
 
-
-
-  const updateCredentialField = (id: string, field: Partial<CredentialField>) => {
-    setCredentialFields(credentialFields.map((f) => (f.id === id ? { ...f, ...field } : f)));
+  const updateCredentialField = (
+    id: string,
+    field: Partial<CredentialField>
+  ) => {
+    setCredentialFields(
+      credentialFields.map((f) => (f.id === id ? { ...f, ...field } : f))
+    );
   };
-
-
 
   const convertFieldsToCredentialSubject = (): JsonDocumentObject => {
     const subject: JsonDocumentObject = {};
@@ -115,10 +138,16 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
         // Convert value based on type
         switch (field.type) {
           case "number":
-            value = typeof field.value === "string" ? parseFloat(field.value) || 0 : field.value;
+            value =
+              typeof field.value === "string"
+                ? parseFloat(field.value) || 0
+                : field.value;
             break;
           case "boolean":
-            value = typeof field.value === "string" ? field.value === "true" : field.value;
+            value =
+              typeof field.value === "string"
+                ? field.value === "true"
+                : field.value;
             break;
           case "date":
             if (typeof field.value === "string") {
@@ -126,7 +155,9 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
               const date = new Date(field.value);
               if (!isNaN(date.getTime())) {
                 value = parseInt(
-                  date.getFullYear().toString() + (date.getMonth() + 1).toString().padStart(2, "0") + date.getDate().toString().padStart(2, "0")
+                  date.getFullYear().toString() +
+                    (date.getMonth() + 1).toString().padStart(2, "0") +
+                    date.getDate().toString().padStart(2, "0")
                 );
               }
             }
@@ -144,10 +175,16 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
   const generateWidget = async () => {
     try {
       // Step 1: Fetch the issuer auth token using the API key
-      const fetchedIssuerAuthToken = await getIssuerAuthToken(config.issuerDid, config.apiKey, environmentConfig.apiUrl);
+      const fetchedIssuerAuthToken = await getIssuerAuthToken(
+        config.issuerDid,
+        config.apiKey,
+        environmentConfig.apiUrl
+      );
 
       if (!fetchedIssuerAuthToken) {
-        setError("Failed to fetch issuer authentication token. Please check your DID and API Key.");
+        setError(
+          "Failed to fetch issuer authentication token. Please check your DID and API Key."
+        );
         setIsLoading(false);
         return;
       }
@@ -165,14 +202,18 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
         credentialSubject: credentialSubject,
       };
 
-      const rp = await airService?.goToPartner(environmentConfig.widgetUrl).catch((err) => {
-        console.error("Error getting URL with token:", err);
-      });
+      const rp = await airService
+        ?.goToPartner(environmentConfig.widgetUrl)
+        .catch((err) => {
+          console.error("Error getting URL with token:", err);
+        });
 
       console.log("urlWithToken", rp, rp?.urlWithToken);
 
       if (!rp?.urlWithToken) {
-        console.warn("Failed to get URL with token. Please check your partner ID.");
+        console.warn(
+          "Failed to get URL with token. Please check your partner ID."
+        );
         setError("Failed to get URL with token. Please check your partner ID.");
         setIsLoading(false);
         return;
@@ -247,7 +288,11 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
         return (
           <select
             value={field.value.toString()}
-            onChange={(e) => updateCredentialField(field.id, { value: e.target.value === "true" })}
+            onChange={(e) =>
+              updateCredentialField(field.id, {
+                value: e.target.value === "true",
+              })
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
           >
             <option value="true">True</option>
@@ -259,7 +304,9 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
           <input
             type="date"
             value={typeof field.value === "string" ? field.value : ""}
-            onChange={(e) => updateCredentialField(field.id, { value: e.target.value })}
+            onChange={(e) =>
+              updateCredentialField(field.id, { value: e.target.value })
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         );
@@ -268,7 +315,11 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
           <input
             type="number"
             value={field.value.toString()}
-            onChange={(e) => updateCredentialField(field.id, { value: parseFloat(e.target.value) || 0 })}
+            onChange={(e) =>
+              updateCredentialField(field.id, {
+                value: parseFloat(e.target.value) || 0,
+              })
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         );
@@ -277,7 +328,9 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
           <input
             type="text"
             value={field.value.toString()}
-            onChange={(e) => updateCredentialField(field.id, { value: e.target.value })}
+            onChange={(e) =>
+              updateCredentialField(field.id, { value: e.target.value })
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
             placeholder="Enter value"
           />
@@ -289,10 +342,13 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
     <div className="flex-1 p-2 sm:p-4 lg:p-8">
       <div className="w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl sm:mx-auto bg-white rounded-lg shadow-lg p-2 sm:p-6 lg:p-8">
         <div className="mb-4 sm:mb-6 lg:mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-4">Open my credit bureau</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-4">
+            Open my credit bureau
+          </h2>
           <p className="text-gray-600 text-sm sm:text-base">
-            This form allows you to issue a credential to the user. The credential will be issued by the issuer specified in the configuration.
-            
+            This form allows you to issue a credential to the user. The
+            credential will be issued by the issuer specified in the
+            configuration.
           </p>
         </div>
 
@@ -349,7 +405,11 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
         <input
           type="text"
           value={credentialFields[0].value.toString()}
-          onChange={(e) => updateCredentialField(credentialFields[0].id, { value: e.target.value })}
+          onChange={(e) =>
+            updateCredentialField(credentialFields[0].id, {
+              value: e.target.value,
+            })
+          }
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 mb-4"
           placeholder="Enter account number"
         />
@@ -383,7 +443,9 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
 
         {isSuccess && (
           <div className="mb-4 sm:mb-6 p-2 sm:p-4 bg-green-50 border border-green-200 rounded-md">
-            <p className="text-green-800 text-xs sm:text-base">✅ Credential issuance completed successfully!</p>
+            <p className="text-green-800 text-xs sm:text-base">
+              ✅ Credential issuance completed successfully!
+            </p>
           </div>
         )}
 
@@ -401,7 +463,9 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
               <div className="bg-white p-6 rounded-lg shadow-lg w-96">
                 <h3 className="text-lg font-bold mb-4">KYC Process</h3>
-                <p className="text-sm text-gray-600 mb-4">Please complete the KYC process by following the instructions.</p>
+                <p className="text-sm text-gray-600 mb-4">
+                  Please complete the KYC process by following the instructions.
+                </p>
                 <button
                   onClick={() => {
                     setShowKYCModal(false);
@@ -423,8 +487,20 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId,
             >
               {isLoading ? (
                 <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
                     <path
                       className="opacity-75"
                       fill="currentColor"

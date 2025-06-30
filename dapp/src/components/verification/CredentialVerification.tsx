@@ -1,5 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { AirCredentialWidget, type QueryRequest, type VerificationResults, type Language } from "@mocanetwork/air-credential-sdk";
+import {
+  AirCredentialWidget,
+  type QueryRequest,
+  type VerificationResults,
+  type Language,
+} from "@mocanetwork/air-credential-sdk";
 import "@mocanetwork/air-credential-sdk/dist/style.css";
 import { type AirService, BUILD_ENV } from "@mocanetwork/airkit";
 import type { BUILD_ENV_TYPE } from "@mocanetwork/airkit";
@@ -16,7 +21,11 @@ interface CredentialVerificationProps {
   environmentConfig: EnvironmentConfig;
 }
 
-const getVerifierAuthToken = async (verifierDid: string, apiKey: string, apiUrl: string): Promise<string | null> => {
+const getVerifierAuthToken = async (
+  verifierDid: string,
+  apiKey: string,
+  apiUrl: string
+): Promise<string | null> => {
   try {
     const response = await fetch(`${apiUrl}/verifier/login`, {
       method: "POST",
@@ -40,7 +49,10 @@ const getVerifierAuthToken = async (verifierDid: string, apiKey: string, apiUrl:
     if (data.code === 80000000 && data.data && data.data.token) {
       return data.data.token;
     } else {
-      console.error("Failed to get verifier auth token from API:", data.msg || "Unknown error");
+      console.error(
+        "Failed to get verifier auth token from API:",
+        data.msg || "Unknown error"
+      );
       return null;
     }
   } catch (error) {
@@ -49,18 +61,31 @@ const getVerifierAuthToken = async (verifierDid: string, apiKey: string, apiUrl:
   }
 };
 
-const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv, partnerId, environmentConfig }: CredentialVerificationProps) => {
+const CredentialVerification = ({
+  airService,
+  isLoggedIn,
+  airKitBuildEnv,
+  partnerId,
+  environmentConfig,
+}: CredentialVerificationProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [verificationResult, setVerificationResult] = useState<VerificationResults | null>(null);
+  const [verificationResult, setVerificationResult] =
+    useState<VerificationResults | null>(null);
   const [error, setError] = useState<string | null>(null);
   const widgetRef = useRef<AirCredentialWidget | null>(null);
 
   // Configuration - these would typically come from environment variables or API
   const [config, setConfig] = useState({
-    apiKey: import.meta.env.VITE_VERIFIER_API_KEY || "W9J6VXGJX0AT0lCvlIXibzNzWyB440QFuij0cicC",
-    verifierDid: import.meta.env.VITE_VERIFIER_DID || "did:key:81gFg9GZLm3RWTcEg1vHQKci33nfzwo9sWsCCk81yhnHcJ6tLSrJWfwcry78mEgxcP3MUajHQnp4Xgm1LeKVPvprGz",
+    apiKey:
+      import.meta.env.VITE_VERIFIER_API_KEY ||
+      "W9J6VXGJX0AT0lCvlIXibzNzWyB440QFuij0cicC",
+    verifierDid:
+      import.meta.env.VITE_VERIFIER_DID ||
+      "did:key:81gFg9GZLm3RWTcEg1vHQKci33nfzwo9sWsCCk81yhnHcJ6tLSrJWfwcry78mEgxcP3MUajHQnp4Xgm1LeKVPvprGz",
     programId: import.meta.env.VITE_PROGRAM_ID || "c21hi031bwgz20003245NG",
-    redirectUrlForIssuer: import.meta.env.VITE_REDIRECT_URL_FOR_ISSUER || "http://localhost:5173/issue",
+    redirectUrlForIssuer:
+      import.meta.env.VITE_REDIRECT_URL_FOR_ISSUER ||
+      "http://localhost:5173/issue",
   });
 
   console.log("AirService in CredentialVerification:", airService);
@@ -72,10 +97,16 @@ const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv, partne
   const generateWidget = async () => {
     try {
       // Step 1: Fetch the verifier auth token using the API key
-      const fetchedVerifierAuthToken = await getVerifierAuthToken(config.verifierDid, config.apiKey, environmentConfig.apiUrl);
+      const fetchedVerifierAuthToken = await getVerifierAuthToken(
+        config.verifierDid,
+        config.apiKey,
+        environmentConfig.apiUrl
+      );
 
       if (!fetchedVerifierAuthToken) {
-        setError("Failed to fetch verifier authentication token. Please check your API Key.");
+        setError(
+          "Failed to fetch verifier authentication token. Please check your API Key."
+        );
         setIsLoading(false);
         return;
       }
@@ -87,12 +118,16 @@ const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv, partne
         programId: config.programId,
       };
 
-      const rp = await airService?.goToPartner(environmentConfig.widgetUrl).catch((err) => {
-        console.error("Error getting URL with token:", err);
-      });
+      const rp = await airService
+        ?.goToPartner(environmentConfig.widgetUrl)
+        .catch((err) => {
+          console.error("Error getting URL with token:", err);
+        });
 
       if (!rp?.urlWithToken) {
-        console.warn("Failed to get URL with token. Please check your partner ID.");
+        console.warn(
+          "Failed to get URL with token. Please check your partner ID."
+        );
         setError("Failed to get URL with token. Please check your partner ID.");
         setIsLoading(false);
         return;
@@ -107,11 +142,14 @@ const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv, partne
       });
 
       // Set up event listeners
-      widgetRef.current.on("verifyCompleted", (results: VerificationResults) => {
-        setVerificationResult(results);
-        setIsLoading(false);
-        console.log("Verification completed:", results);
-      });
+      widgetRef.current.on(
+        "verifyCompleted",
+        (results: VerificationResults) => {
+          setVerificationResult(results);
+          setIsLoading(false);
+          console.log("Verification completed:", results);
+        }
+      );
 
       widgetRef.current.on("close", () => {
         setIsLoading(false);
@@ -227,14 +265,16 @@ const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv, partne
     <div className="flex-1 p-2 sm:p-4 lg:p-8">
       <div className="max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-2 sm:p-6 lg:p-8">
         <div className="mb-4 sm:mb-6 lg:mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-verify-700 mb-2 sm:mb-4">Credential Verification</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-verify-700 mb-2 sm:mb-4">
+            Loan Dashboard
+          </h2>
           <p className="text-gray-600 text-sm sm:text-base">
-            Verify digital credentials using the AIR Credential SDK. Configure the verification parameters below and Start the widget to begin the
-            verification process.
+            Verify digital credentials and manage loan applications using the
+            Air Credential Verification Widget.
           </p>
         </div>
 
-        {/* Configuration Section */}
+        {/* Configuration Section 
         <div className="mb-6 sm:mb-8">
           <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-4">Configuration</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -292,9 +332,9 @@ const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv, partne
               />
             </div>
           </div>
-        </div>
+        </div>*/}
 
-        {/* Environment Info */}
+        {/* Environment Info 
         <div className="mb-6 sm:mb-8 p-2 sm:p-4 bg-gray-50 border border-gray-200 rounded-md">
           <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-1 sm:mb-2">Environment Configuration:</h4>
           <div className="text-xs text-gray-700 space-y-1">
@@ -311,7 +351,7 @@ const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv, partne
               <strong>Locale:</strong> {LOCALE}
             </p>
           </div>
-        </div>
+        </div>*/}
 
         {/* Status Messages */}
         {error && (
@@ -323,20 +363,29 @@ const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv, partne
         {/* Verification Results */}
         {verificationResult && (
           <div className="mb-6 sm:mb-8">
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-4">Verification Results</h3>
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-4">
+              Verification Results
+            </h3>
             <div className="p-2 sm:p-4 border rounded-md">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2">
-                <h4 className="font-medium text-gray-900 text-sm sm:text-base">Verification Result</h4>
+                <h4 className="font-medium text-gray-900 text-sm sm:text-base">
+                  Verification Result
+                </h4>
                 <span
                   className={`mt-2 sm:mt-0 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium border ${getStatusColor(
                     verificationResult.status
                   )}`}
                 >
-                  {getStatusIcon(verificationResult.status)} {verificationResult.status}
+                  {getStatusIcon(verificationResult.status)}{" "}
+                  {verificationResult.status}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-gray-600 mb-2">{getStatusDescription(verificationResult.status)}</p>
-              <pre className="text-xs text-gray-500 bg-gray-50 p-2 rounded overflow-auto">{JSON.stringify(verificationResult, null, 2)}</pre>
+              <p className="text-xs sm:text-sm text-gray-600 mb-2">
+                {getStatusDescription(verificationResult.status)}
+              </p>
+              <pre className="text-xs text-gray-500 bg-gray-50 p-2 rounded overflow-auto">
+                {JSON.stringify(verificationResult, null, 2)}
+              </pre>
             </div>
           </div>
         )}
@@ -350,8 +399,20 @@ const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv, partne
           >
             {isLoading ? (
               <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
                   <path
                     className="opacity-75"
                     fill="currentColor"
@@ -375,7 +436,7 @@ const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv, partne
           )}
         </div>
 
-        {/* Instructions */}
+        {/* Instructions 
         <div className="mt-6 sm:mt-8 p-2 sm:p-4 bg-blue-50 border border-blue-200 rounded-md">
           <h4 className="text-xs sm:text-sm font-medium text-blue-900 mb-1 sm:mb-2">Instructions:</h4>
           <ul className="text-xs sm:text-sm text-blue-800 space-y-1">
@@ -387,7 +448,7 @@ const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv, partne
             <li>• The widget will handle the credential verification flow</li>
             <li>• Review the verification results after completion</li>
           </ul>
-        </div>
+        </div>*/}
       </div>
     </div>
   );

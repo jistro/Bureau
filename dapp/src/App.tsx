@@ -1,15 +1,33 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import "./App.css";
 import CredentialIssuance from "./components/issuance/CredentialIssuance";
 import CredentialVerification from "./components/verification/CredentialVerification";
 import NavBarLogin from "./components/NavBarLogin";
-import { AirService, BUILD_ENV, type AirEventListener, type BUILD_ENV_TYPE } from "@mocanetwork/airkit";
-import { getEnvironmentConfig, type EnvironmentConfig } from "./config/environments";
+import {
+  AirService,
+  BUILD_ENV,
+  type AirEventListener,
+  type BUILD_ENV_TYPE,
+} from "@mocanetwork/airkit";
+import {
+  getEnvironmentConfig,
+  type EnvironmentConfig,
+} from "./config/environments";
 
 // Get partner IDs from environment variables
-const ISSUER_PARTNER_ID = import.meta.env.VITE_ISSUER_PARTNER_ID || "083ab449-16e0-4b70-b3fd-6606ce0d4a90";
-const VERIFIER_PARTNER_ID = import.meta.env.VITE_VERIFIER_PARTNER_ID || "083ab449-16e0-4b70-b3fd-6606ce0d4a90";
+const ISSUER_PARTNER_ID =
+  import.meta.env.VITE_ISSUER_PARTNER_ID ||
+  "083ab449-16e0-4b70-b3fd-6606ce0d4a90";
+const VERIFIER_PARTNER_ID =
+  import.meta.env.VITE_VERIFIER_PARTNER_ID ||
+  "083ab449-16e0-4b70-b3fd-6606ce0d4a90";
 const enableLogging = true;
 
 const ENV_OPTIONS = [
@@ -181,7 +199,9 @@ function AppRoutes({
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200">
         <div className="max-w-full sm:max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-6">
-          <p className="text-center text-gray-500 text-xs sm:text-sm">Powered by AIR Credential SDK</p>
+          <p className="text-center text-gray-500 text-xs sm:text-sm">
+            Powered by AIR Credential SDK
+          </p>
         </div>
       </footer>
     </div>
@@ -194,13 +214,18 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userAddress, setUserAddress] = useState<string | null>(null);
-  const [currentEnv, setCurrentEnv] = useState<BUILD_ENV_TYPE>(BUILD_ENV.SANDBOX);
+  const [currentEnv, setCurrentEnv] = useState<BUILD_ENV_TYPE>(
+    BUILD_ENV.SANDBOX
+  );
   const [partnerId, setPartnerId] = useState<string>(ISSUER_PARTNER_ID);
 
   // Get environment config based on current environment
   const environmentConfig = getEnvironmentConfig(currentEnv);
 
-  const initializeAirService = async (env: BUILD_ENV_TYPE = currentEnv, partnerIdToUse: string = partnerId) => {
+  const initializeAirService = async (
+    env: BUILD_ENV_TYPE = currentEnv,
+    partnerIdToUse: string = partnerId
+  ) => {
     if (!partnerIdToUse || partnerIdToUse === "your-partner-id") {
       console.warn("No valid Partner ID configured for nav bar login");
       setIsInitialized(true); // Set to true to prevent infinite loading
@@ -209,7 +234,11 @@ function App() {
 
     try {
       const service = new AirService({ partnerId: partnerIdToUse });
-      await service.init({ buildEnv: env as (typeof BUILD_ENV)[keyof typeof BUILD_ENV], enableLogging, skipRehydration: false });
+      await service.init({
+        buildEnv: env as (typeof BUILD_ENV)[keyof typeof BUILD_ENV],
+        enableLogging,
+        skipRehydration: false,
+      });
       setAirService(service);
       setIsInitialized(true);
       setIsLoggedIn(service.isLoggedIn);
@@ -221,10 +250,19 @@ function App() {
           setUserAddress(result.abstractAccountAddress || null);
         } else {
           console.log("no abstractAccountAddress @ initializeAirService");
-          const accounts = await airService?.provider.request({ method: "eth_accounts", params: [] });
+          const accounts = await airService?.provider.request({
+            method: "eth_accounts",
+            params: [],
+          });
 
-          console.log("accounts @ initializeAirService", accounts, airService?.provider);
-          setUserAddress(Array.isArray(accounts) && accounts.length > 0 ? accounts[0] : null);
+          console.log(
+            "accounts @ initializeAirService",
+            accounts,
+            airService?.provider
+          );
+          setUserAddress(
+            Array.isArray(accounts) && accounts.length > 0 ? accounts[0] : null
+          );
         }
       }
 
@@ -234,8 +272,15 @@ function App() {
           if (data.result.abstractAccountAddress) {
             setUserAddress(data.result.abstractAccountAddress || null);
           } else {
-            const accounts = await airService?.provider.request({ method: "eth_accounts", params: [] });
-            setUserAddress(Array.isArray(accounts) && accounts.length > 0 ? accounts[0] : null);
+            const accounts = await airService?.provider.request({
+              method: "eth_accounts",
+              params: [],
+            });
+            setUserAddress(
+              Array.isArray(accounts) && accounts.length > 0
+                ? accounts[0]
+                : null
+            );
           }
         } else if (data.event === "logged_out") {
           setIsLoggedIn(false);
@@ -276,8 +321,13 @@ function App() {
       if (loginResult.abstractAccountAddress) {
         setUserAddress(loginResult.abstractAccountAddress || null);
       } else {
-        const accounts = await airService?.provider.request({ method: "eth_accounts", params: [] });
-        setUserAddress(Array.isArray(accounts) && accounts.length > 0 ? accounts[0] : null);
+        const accounts = await airService?.provider.request({
+          method: "eth_accounts",
+          params: [],
+        });
+        setUserAddress(
+          Array.isArray(accounts) && accounts.length > 0 ? accounts[0] : null
+        );
       }
     } catch (err) {
       console.error("Login failed:", err);

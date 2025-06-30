@@ -13,7 +13,8 @@ contract LoanContract {
     mapping(address => mapping(uint256 => LoanDetails)) public loans;
 
     // Mapping to store liquidity receipts for each user, indexed by liquidity ID
-    mapping(address => mapping(uint256 => LiquidityReceipt)) public liquidityReceipts;
+    mapping(address => mapping(uint256 => LiquidityReceipt))
+        public liquidityReceipts;
 
     // Mapping to store total liquidity balances for each user
     mapping(address => uint256) public liquidityBalances;
@@ -61,10 +62,11 @@ contract LoanContract {
     uint256 public nextLoanId; // Counter for generating unique loan IDs
 
     // Maximum credit limit per user (e.g., 500 USD in token units)
-    uint256 public constant MAX_CREDIT_LIMIT = 500 * 10**5; // USDC has 5 decimals
+    uint256 public constant MAX_CREDIT_LIMIT = 500 * 10 ** 5; // USDC has 5 decimals
 
     // USDC token address (replace with actual address on your network)
-    address public constant USDC_ADDRESS = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48; // Example: Ethereum Mainnet
+    address public constant USDC_ADDRESS =
+        0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48; // Example: Ethereum Mainnet
 
     constructor() {
         token = IERC20(USDC_ADDRESS); // Initialize the contract with USDC token
@@ -134,7 +136,10 @@ contract LoanContract {
             LoanDetails storage loan = loans[user][i];
             if (loan.totalAmount > 0) {
                 for (uint256 j = 0; j < loan.installments.length; j++) {
-                    if (!loan.installments[j].isPaid && block.timestamp > loan.installments[j].dueDate) {
+                    if (
+                        !loan.installments[j].isPaid &&
+                        block.timestamp > loan.installments[j].dueDate
+                    ) {
                         return true;
                     }
                 }
