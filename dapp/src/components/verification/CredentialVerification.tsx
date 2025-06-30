@@ -100,10 +100,6 @@ const CredentialVerification = ({
 
   console.log("AirService in CredentialVerification:", airService);
 
-  const handleConfigChange = (field: string, value: string) => {
-    setConfig((prev) => ({ ...prev, [field]: value }));
-  };
-
   const generateRandomEVMAddress = () => {
     const hexChars = "0123456789abcdef";
     let address = "0x";

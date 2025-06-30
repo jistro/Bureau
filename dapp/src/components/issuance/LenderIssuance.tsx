@@ -83,7 +83,7 @@ const LenderIssuance = ({
   const widgetRef = useRef<AirCredentialWidget | null>(null);
 
   // Configuration - these would typically come from environment variables or API
-  const [config, setConfig] = useState({
+  const [config] = useState({
     issuerDid:
       import.meta.env.VITE_ISSUER_DID ||
       "did:air:id:test:4P6aviTbQKGUZ27kjWDBgFrTp2CLcNCyEcszfu91jC",
@@ -115,10 +115,6 @@ const LenderIssuance = ({
       value: "history: Good credit history with no late payments ",
     },
   ]);
-
-  const handleConfigChange = (field: string, value: string) => {
-    setConfig((prev) => ({ ...prev, [field]: value }));
-  };
 
   const updateCredentialField = (
     id: string,
@@ -281,62 +277,6 @@ const LenderIssuance = ({
       }
     };
   }, []);
-
-  const renderFieldValueInput = (field: CredentialField) => {
-    switch (field.type) {
-      case "boolean":
-        return (
-          <select
-            value={field.value.toString()}
-            onChange={(e) =>
-              updateCredentialField(field.id, {
-                value: e.target.value === "true",
-              })
-            }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
-          >
-            <option value="true">True</option>
-            <option value="false">False</option>
-          </select>
-        );
-      case "date":
-        return (
-          <input
-            type="date"
-            value={typeof field.value === "string" ? field.value : ""}
-            onChange={(e) =>
-              updateCredentialField(field.id, { value: e.target.value })
-            }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
-          />
-        );
-      case "number":
-        return (
-          <input
-            type="number"
-            value={field.value.toString()}
-            onChange={(e) =>
-              updateCredentialField(field.id, {
-                value: parseFloat(e.target.value) || 0,
-              })
-            }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
-          />
-        );
-      default:
-        return (
-          <input
-            type="text"
-            value={field.value.toString()}
-            onChange={(e) =>
-              updateCredentialField(field.id, { value: e.target.value })
-            }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
-            placeholder="Enter value"
-          />
-        );
-    }
-  };
 
   return (
     <div className="flex-1 p-2 sm:p-4 lg:p-8">
