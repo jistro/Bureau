@@ -93,7 +93,13 @@ contract LoanContract {
         balances[msg.sender] += amount;
     }
 
-    // Function to get the balance of a user
+     /*
+    Thnis function returns the balance of a user.
+    It checks the user's balance in the contract and returns it.
+    This is a simple getter function that allows users to check their balance.
+    It is important for users to know their balance before making transactions.\
+    
+    */
     function getBalance(address user) public view returns (uint256) {
         return balances[user];
     }

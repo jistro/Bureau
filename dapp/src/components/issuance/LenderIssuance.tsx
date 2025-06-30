@@ -9,7 +9,6 @@ import "@mocanetwork/air-credential-sdk/dist/style.css";
 import { AirService, BUILD_ENV } from "@mocanetwork/airkit";
 import type { BUILD_ENV_TYPE } from "@mocanetwork/airkit";
 import type { EnvironmentConfig } from "../../config/environments";
-import { ZKPassport } from "@zkpassport/sdk";
 
 // Environment variables for configuration
 const LOCALE = import.meta.env.VITE_LOCALE || "en";
@@ -21,7 +20,7 @@ interface CredentialField {
   value: string | number | boolean;
 }
 
-interface CredentialIssuanceProps {
+interface LenderIssuanceProps {
   airService: AirService | null;
   isLoggedIn: boolean;
   airKitBuildEnv: BUILD_ENV_TYPE;
@@ -69,20 +68,18 @@ const getIssuerAuthToken = async (
   }
 };
 
-const CredentialIssuance = ({
+const LenderIssuance = ({
   airService,
   isLoggedIn,
   airKitBuildEnv,
   partnerId,
   environmentConfig,
-}: CredentialIssuanceProps) => {
+}: LenderIssuanceProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showKYCModal, setShowKYCModal] = useState(false);
   const [showCredentialButton, setShowCredentialButton] = useState(false);
-  const [userType, setUserType] = useState("borrower"); // Default user type
-  const [qrCode, setQrCode] = useState<string | null>(null);
   const widgetRef = useRef<AirCredentialWidget | null>(null);
 
   // Configuration - these would typically come from environment variables or API
@@ -117,15 +114,11 @@ const CredentialIssuance = ({
       type: "string",
       value: "history: Good credit history with no late payments ",
     },
-    {
-      id: "4",
-      name: "nationality",
-      type: "string",
-      value: "Employed",
-    }
   ]);
 
-
+  const handleConfigChange = (field: string, value: string) => {
+    setConfig((prev) => ({ ...prev, [field]: value }));
+  };
 
   const updateCredentialField = (
     id: string,
@@ -289,17 +282,6 @@ const CredentialIssuance = ({
     };
   }, []);
 
-  useEffect(() => {
-    // Update credential ID based on user type
-    setConfig((prev) => ({
-      ...prev,
-      credentialId:
-        userType === "lender"
-          ? "c21hi0g1db6m50015448zs" // ID para lender
-          : "c21hi0g1dbsg30024450wu", // ID para borrower
-    }));
-  }, [userType]);
-
   const renderFieldValueInput = (field: CredentialField) => {
     switch (field.type) {
       case "boolean":
@@ -355,8 +337,6 @@ const CredentialIssuance = ({
         );
     }
   };
-
-  const zkPassport = new ZKPassport();
 
   return (
     <div className="flex-1 p-2 sm:p-4 lg:p-8">
@@ -419,21 +399,6 @@ const CredentialIssuance = ({
           </div>
         </div>
         */}
-
-        {/* User Type Selection */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Select User Type
-          </label>
-          <select
-            value={userType}
-            onChange={(e) => setUserType(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
-          >
-            <option value="lender">Lender</option>
-            <option value="borrower">Borrower</option>
-          </select>
-        </div>
 
         {/* Dynamic Credential Subject Section */}
         <label>account number</label>
@@ -502,62 +467,14 @@ const CredentialIssuance = ({
                   Please complete the KYC process by following the instructions.
                 </p>
                 <button
-                  onClick={async () => {
-                    const queryBuilder = await zkPassport.request({
-                      name: "Credential Issuance App",
-                      logo: "https://zkpassport.id/logo.png",
-                      purpose: "Prove your nationality",
-                      scope: "nationality",
-                      devMode: true,
-                    });
-
-                    const {
-                      url,
-                      onResult,
-                    } = queryBuilder
-                      .disclose("nationality")
-                      .done();
-
-                    // Handle the result
-                    onResult(({ result, verified }) => {
-                      if (verified) {
-                        const nationality = result.nationality.disclose.result;
-
-                        updateCredentialField("4", {
-                          value: nationality,
-                        });
-                      } else {
-                        console.error("Verification failed");
-                      }
-
-                      setShowKYCModal(false);
-                      setShowCredentialButton(true);
-                    });
-
-                    // Generate QR code for ZKPassport app
-                    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
-
-                    // Display QR code image
-                    setQrCode(qrCodeUrl);
+                  onClick={() => {
+                    setShowKYCModal(false);
+                    setShowCredentialButton(true);
                   }}
                   className="w-full bg-green-600 text-white px-4 py-2 rounded-md font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
                 >
-                  Verify Nationality
+                  Complete KYC
                 </button>
-
-                {qrCode && (
-                  <div className="mt-4">
-                    <img
-                      src={qrCode}
-                      alt="QR Code for ZKPassport Verification"
-                      className="w-36 h-36 mx-auto"
-                    />
-                    <p className="text-center text-xs text-gray-500 mt-2">
-                      Scan the QR code with the ZKPassport app to verify your
-                      nationality.
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -593,7 +510,7 @@ const CredentialIssuance = ({
                   Launching Widget...
                 </span>
               ) : (
-                `Issuance as a ${userType}`
+                "Start Credential Issuance Widget"
               )}
             </button>
           )}
@@ -625,4 +542,4 @@ const CredentialIssuance = ({
   );
 };
 
-export default CredentialIssuance;
+export default LenderIssuance;

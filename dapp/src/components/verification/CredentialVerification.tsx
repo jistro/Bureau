@@ -72,6 +72,16 @@ const CredentialVerification = ({
   const [verificationResult, setVerificationResult] =
     useState<VerificationResults | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [userType, setUserType] = useState("borrower"); // Default user type
+  const [mockData, setMockData] = useState({
+    lender: { amountLent: 5000 },
+    borrower: { amountBorrowed: 3000 },
+  });
+  const [mockPieData, setMockPieData] = useState([
+    { address: "", percentage: 40, color: "#60a5fa" },
+    { address: "", percentage: 30, color: "#93c5fd" },
+    { address: "", percentage: 30, color: "#3b82f6" },
+  ]);
   const widgetRef = useRef<AirCredentialWidget | null>(null);
 
   // Configuration - these would typically come from environment variables or API
@@ -92,6 +102,15 @@ const CredentialVerification = ({
 
   const handleConfigChange = (field: string, value: string) => {
     setConfig((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const generateRandomEVMAddress = () => {
+    const hexChars = "0123456789abcdef";
+    let address = "0x";
+    for (let i = 0; i < 40; i++) {
+      address += hexChars[Math.floor(Math.random() * hexChars.length)];
+    }
+    return address;
   };
 
   const generateWidget = async () => {
@@ -254,6 +273,11 @@ const CredentialVerification = ({
   };
 
   useEffect(() => {
+    // Generate random EVM addresses for mock data
+    setMockPieData((prev) =>
+      prev.map((slice) => ({ ...slice, address: generateRandomEVMAddress() }))
+    );
+
     return () => {
       if (widgetRef.current) {
         widgetRef.current.destroy();
@@ -265,13 +289,198 @@ const CredentialVerification = ({
     <div className="flex-1 p-2 sm:p-4 lg:p-8">
       <div className="max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-2 sm:p-6 lg:p-8">
         <div className="mb-4 sm:mb-6 lg:mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-verify-700 mb-2 sm:mb-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-blue-700 mb-2 sm:mb-4">
             Loan Dashboard
           </h2>
           <p className="text-gray-600 text-sm sm:text-base">
             Verify digital credentials and manage loan applications using the
             Air Credential Verification Widget.
           </p>
+        </div>
+
+        {/* User Type Selection */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Select User Type
+          </label>
+          <select
+            value={userType}
+            onChange={(e) => setUserType(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
+          >
+            <option value="lender">Lender</option>
+            <option value="borrower">Borrower</option>
+          </select>
+        </div>
+
+        {/* Dashboard Section with Mock Graphs */}
+        <div className="mb-6 sm:mb-8">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-4">
+            {userType === "lender" ? "Lender Dashboard" : "Borrower Dashboard"}
+          </h3>
+          <div className="p-2 sm:p-4 border rounded-md">
+            {userType === "lender" ? (
+              <div>
+                <p className="text-sm text-gray-600 mb-2">
+                  Amount Lent:{" "}
+                  <span className="font-bold">${mockData.lender.amountLent}</span>
+                </p>
+                <div className="h-40 bg-blue-100 rounded-md flex items-center justify-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 100 50"
+                    className="w-full h-full"
+                  >
+                    {mockPieData.map((slice, index) => {
+                      const paid = Math.round(slice.percentage * 0.6); // Example: 60% paid
+                      const remaining = slice.percentage - paid;
+
+                      return (
+                        <g key={index}>
+                          {/* Paid portion */}
+                          <rect
+                            x={index * 30 + 10}
+                            y={50 - paid}
+                            width="20"
+                            height={paid}
+                            fill="#34d399" // Green for paid
+                          />
+                          {/* Remaining portion */}
+                          <rect
+                            x={index * 30 + 10}
+                            y={50 - slice.percentage}
+                            width="20"
+                            height={remaining}
+                            fill="#f87171" // Red for remaining
+                          />
+                          {/* Labels */}
+                          <text
+                            x={index * 30 + 20}
+                            y={50 - slice.percentage + 5}
+                            textAnchor="middle"
+                            fontSize="3"
+                            fill="white"
+                          >
+                            Paid: {paid}%
+                          </text>
+                          <text
+                            x={index * 30 + 20}
+                            y={50 - slice.percentage + 10}
+                            textAnchor="middle"
+                            fontSize="3"
+                            fill="white"
+                          >
+                            Remaining: {remaining}%
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                </div>
+                <div className="mt-4">
+                  {mockPieData.map((slice, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <span
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: slice.color }}
+                      ></span>
+                      <span className="text-sm text-gray-600">
+                        {slice.address}: {slice.percentage}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Precaution: If the borrower fails to pay on time, their
+                  information will be disclosed to protocols or companies
+                  requesting it. If the borrower completes payments on time, their
+                  information will never be revealed, and you may receive a
+                  percentage of the commission earned for the investigation.
+                </p>
+              </div>
+            ) : (
+              <div>
+                <p className="text-sm text-gray-600 mb-2">
+                  Amount Borrowed: {" "}
+                  <span className="font-bold">
+                    ${mockData.borrower.amountBorrowed}
+                  </span>
+                </p>
+                <div className="h-40 bg-blue-100 rounded-md flex items-center justify-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 100 50"
+                    className="w-full h-full"
+                  >
+                    {mockPieData.map((slice, index) => {
+                      const remaining = Math.round(slice.percentage * 0.6); // Example: 60% remaining
+                      const paid = slice.percentage - remaining;
+
+                      return (
+                        <g key={index}>
+                          {/* Remaining portion */}
+                          <rect
+                            x={index * 30 + 10}
+                            y={50 - remaining}
+                            width="20"
+                            height={remaining}
+                            fill="#f87171" // Red for remaining
+                          />
+                          {/* Paid portion */}
+                          <rect
+                            x={index * 30 + 10}
+                            y={50 - slice.percentage}
+                            width="20"
+                            height={paid}
+                            fill="#34d399" // Green for paid
+                          />
+                          {/* Labels */}
+                          <text
+                            x={index * 30 + 20}
+                            y={50 - slice.percentage + 5}
+                            textAnchor="middle"
+                            fontSize="3"
+                            fill="white"
+                          >
+                            Remaining: {remaining}%
+                          </text>
+                          <text
+                            x={index * 30 + 20}
+                            y={50 - slice.percentage + 10}
+                            textAnchor="middle"
+                            fontSize="3"
+                            fill="white"
+                          >
+                            Paid: {paid}%
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                </div>
+                <div className="mt-4">
+                  {mockPieData.map((slice, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <span
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: slice.color }}
+                      ></span>
+                      <span className="text-sm text-gray-600">
+                        {slice.address}: {slice.percentage}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Precaution: If debtors fail to pay on time, their information
+                  will be disclosed to protocols or companies requesting it. If the
+                  debtor completes payments on time, their information will never be
+                  revealed, and you may receive a percentage of the commission earned
+                  for the investigation.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Configuration Section 

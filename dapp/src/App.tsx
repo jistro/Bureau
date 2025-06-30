@@ -105,7 +105,7 @@ function AppRoutes({
       }
     >
       {/* Header */}
-      <header className="bg-white shadow-lg border-b border-gray-200 rounded-[90px] fixed top-2 left-1/2 -translate-x-1/2 z-50 scale-90 w-[calc(100%+70px)]">
+      <header className="bg-white shadow-lg border-b border-gray-200 rounded-[90px] fixed top-2 left-1/2 -translate-x-1/2 z-50 scale-100 w-[calc(70%+20px)]">
         <div className="max-w-full sm:max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center h-auto sm:h-16 gap-2 sm:gap-0 py-2 sm:py-0">
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-1 sm:space-y-0 sm:space-x-6">
@@ -133,6 +133,8 @@ function AppRoutes({
                 >
                   Open my credit
                 </a>
+                
+              
                 <a
                   href="/verify"
                   target="_blank"
@@ -193,6 +195,8 @@ function AppRoutes({
               />
             }
           />
+
+          
         </Routes>
       </main>
 
