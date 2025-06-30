@@ -73,16 +73,22 @@ const CredentialVerification = ({
     useState<VerificationResults | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [userType, setUserType] = useState("borrower"); // Default user type
-  const [mockData, setMockData] = useState({
-    lender: { amountLent: 5000 },
-    borrower: { amountBorrowed: 3000 },
-  });
   const [mockPieData, setMockPieData] = useState([
     { address: "", percentage: 40, color: "#60a5fa" },
     { address: "", percentage: 30, color: "#93c5fd" },
     { address: "", percentage: 30, color: "#3b82f6" },
   ]);
   const widgetRef = useRef<AirCredentialWidget | null>(null);
+
+  // Mock data for dashboard
+  const mockData = {
+    lender: {
+      amountLent: "15,000"
+    },
+    borrower: {
+      amountBorrowed: "10,000"
+    }
+  };
 
   // Configuration - these would typically come from environment variables or API
   const [config, setConfig] = useState({
